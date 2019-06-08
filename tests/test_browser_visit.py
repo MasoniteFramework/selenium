@@ -9,14 +9,13 @@ class TestBrowser(unittest.TestCase, SeleniumTestCase):
     _has_prepared = False
 
     def setUp(self):
-        print(self.current_browser)
         if self._has_prepared:
             self.prepare()
 
             self.__class__._has_prepared = False
 
     def prepare(self):
-        pass
+        self.useBrowser('chrome', '74')
 
     @classmethod
     def setUpClass(cls):
@@ -39,19 +38,14 @@ class TestBrowser(unittest.TestCase, SeleniumTestCase):
         #     .text('website', 'masoniteproject.com')
         #     .submit().assertSee('Web Analysis for masoniteproject.com'))
 
-        (self.visit('https://gbaleague.com').link('Login')
-            .text('username', 'idmann509@gmail.com').text('password', 'secret').submit().assertSee('Battling Bots'))
+        (self.useBrowser('chrome').visit('https://gbaleague.com').link('Login')
+            .text('username', 'idmann509@gmail.com')
+            .text('password', 'secret')
+            .submit()
+            .assertSee('Invalid username or password', element='.alert')
+            .assertCanSee('Invalid username or password', element=".alert"))
 
         # self.assertEqual(self.visit('http://python.org')
         #                  .text('#id-search-field', 'Masonite')
         #                  .value('#id-search-field'), 'Masonite')
 
-
-    def test_value(self):
-        pass
-
-    def test_login_to_pypi(self):
-        pass
-
-    def test_websiteopedia(self):
-        pass

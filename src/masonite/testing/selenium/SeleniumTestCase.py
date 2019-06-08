@@ -1,21 +1,28 @@
 from ..drivers.chrome.ChromeDriver import ChromeDriver
+from ..drivers.firefox.FirefoxDriver import FirefoxDriver
 from selenium.webdriver.support.ui import Select
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, SessionNotCreatedException
 import time
 
 class SeleniumTestCase:
 
     drivers = {
-        'chrome': ChromeDriver
+        'chrome': ChromeDriver,
+        'firefox': FirefoxDriver,
     }
 
     current_browser = None
+
+    def useBrowser(self, browser, version='74'):
+        self.__class__._browser = (browser, version)
+        return self
 
     def make_browser_if_not_exists(self):
         if self.current_browser:
             return self.current_browser
         
-        self.current_browser = self.make('chrome', '74')
+        self.current_browser = self.make(
+            self.__class__._browser[0], self.__class__._browser[1])
         return self.current_browser
         
     def browser(self, browser, version):
@@ -35,12 +42,12 @@ class SeleniumTestCase:
         assert self.current_browser.title != text, "Title is {}".format(self.current_browser.title)
         return self
     
-    def assertSee(self, text):
-        assert text in self.current_browser.find_element_by_tag_name('html').text, "{} is not in the body element".format(text)
+    def assertSee(self, text, element='html'):
+        assert text in self.find(element).text, "{} is not in the {} element".format(text, element)
         return self
 
-    def assertCanSee(self, text):
-        return self.assertSee(text)
+    def assertCanSee(self, text, **kwargs):
+        return self.assertSee(text, **kwargs)
 
     def find(self, element):
         if element.startswith('#'):
@@ -92,6 +99,11 @@ class SeleniumTestCase:
     
     def wait(self, seconds):
         time.sleep(seconds)
+        return self
+
+    def close(self):
+        self.current_browser.quit()
+        return self
     
     def click(self, element):
         element = self.find(element)
@@ -106,4 +118,9 @@ class SeleniumTestCase:
         return self
 
     def make(self, platform='chrome', version='74'):
-        return self.drivers.get(platform)().make(version)
+        if platform not in self.drivers:
+            raise ValueError("{} is not a supported platform driver".format(platform))
+        try:
+            return self.drivers.get(platform)().make(version)
+        except SessionNotCreatedException as e:
+            raise SessionNotCreatedException("Do you have firefox installed? {}".format(str(e)))
