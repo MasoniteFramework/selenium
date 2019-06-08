@@ -3,6 +3,8 @@ from ..drivers.firefox.FirefoxDriver import FirefoxDriver
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException, SessionNotCreatedException
 import time
+import os
+
 
 class SeleniumTestCase:
 
@@ -12,6 +14,7 @@ class SeleniumTestCase:
     }
 
     current_browser = None
+    unique_attribute = 'name'
 
     def useBrowser(self, browser, version='74'):
         self.__class__._browser = (browser, version)
@@ -21,16 +24,19 @@ class SeleniumTestCase:
         if self.current_browser:
             return self.current_browser
         
-        self.current_browser = self.make(
+        self.current_browser = self.makeSelenium(
             self.__class__._browser[0], self.__class__._browser[1])
         return self.current_browser
         
     def browser(self, browser, version):
-        self.current_browser = self.make(browser, version)
+        self.current_browser = self.makeSelenium(browser, version)
         return self
     
     def visit(self, url):
         self.current_browser = self.make_browser_if_not_exists()
+        if not url.startswith('http'):
+            url = os.getenv('APP_URL', 'http://127.0.0.1:8000') + url
+
         self.current_browser.get(url)
         return self
     
@@ -50,7 +56,9 @@ class SeleniumTestCase:
         return self.assertSee(text, **kwargs)
 
     def find(self, element):
-        if element.startswith('#'):
+        if element.startswith('@'):
+            return self.current_browser.find_element_by_xpath("//input[@{}='{}']".format(self.unique_attribute, element[1:]))
+        elif element.startswith('#'):
             return self.current_browser.find_element_by_id(element[1:])
         elif element.startswith('name='):
             return self.current_browser.find_element_by_name(element.split('=')[1])
@@ -117,7 +125,7 @@ class SeleniumTestCase:
         assert self.current_browser.find_element_by_tag_name('body').text in text, "{} is not in the body element".format(text)
         return self
 
-    def make(self, platform='chrome', version='74'):
+    def makeSelenium(self, platform='chrome', version='74'):
         if platform not in self.drivers:
             raise ValueError("{} is not a supported platform driver".format(platform))
         try:

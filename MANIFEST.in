@@ -1,0 +1,9 @@
+
+include src/masonite/testing/drivers/chrome/linux/*
+include src/masonite/testing/drivers/chrome/mac/*
+include src/masonite/testing/drivers/chrome/windows/*
+
+
+include src/masonite/testing/drivers/firefox/linux/*
+include src/masonite/testing/drivers/firefox/mac/*
+include src/masonite/testing/drivers/firefox/windows/*

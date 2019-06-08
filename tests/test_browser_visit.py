@@ -38,11 +38,10 @@ class TestBrowser(unittest.TestCase, SeleniumTestCase):
         #     .text('website', 'masoniteproject.com')
         #     .submit().assertSee('Web Analysis for masoniteproject.com'))
 
-        (self.useBrowser('chrome').visit('https://gbaleague.com').link('Login')
-            .text('username', 'idmann509@gmail.com')
-            .text('password', 'secret')
+        (self.useBrowser('chrome').visit('/').link('Login')
+            .text('@username', 'idmann509@gmail.com')
+            .text('@password', 'secret')
             .submit()
-            .assertSee('Invalid username or password', element='.alert')
             .assertCanSee('Invalid username or password', element=".alert"))
 
         # self.assertEqual(self.visit('http://python.org')
