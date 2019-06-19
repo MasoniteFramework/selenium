@@ -10,7 +10,7 @@ setup(
     ],
     package_dir={'': 'src'},
     include_package_data=True,
-    version='0.0.2',
+    version='0.0.3',
     install_requires=[
         'selenium>=3.141,<4'
     ],
