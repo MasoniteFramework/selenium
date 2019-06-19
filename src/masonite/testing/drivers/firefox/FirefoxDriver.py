@@ -3,14 +3,20 @@ from sys import platform
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox.options import Options
 
 
 class FirefoxDriver:
 
-    def make(self, version='74'):
+    def make(self, version='74', **options):
+        browser_options = Options()
+
+        if options.get('headless') is True:
+            browser_options.add_argument("--headless")
+
         driver_directory = os.path.join(os.path.dirname(
             __file__), self.get_platform(), self.get_platform_filename(version))
-        return webdriver.Firefox(executable_path=driver_directory)
+        return webdriver.Firefox(executable_path=driver_directory, options=browser_options)
 
     def get_platform(self):
         if platform == "linux" or platform == "linux2":

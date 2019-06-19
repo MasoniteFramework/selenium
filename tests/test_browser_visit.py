@@ -21,30 +21,36 @@ class TestBrowser(unittest.TestCase, SeleniumTestCase):
     def setUpClass(cls):
         if hasattr(cls, 'prepare'):
             cls._has_prepared = True
+    
+    def test_python(self):
+        (self.visit('http://python.org')
+            .minimize()
+            .resize(800, 600)
+            .maximize()
+            .text('#id-search-field', 'Masonite')
+            .submit('#submit')
+            .back().forward()
+            .assertSee('Results'))
 
     def test_visit(self):
-        # (self.visit('http://python.org')
-        #     .text('#id-search-field', 'Masonite')
-        #     .submit('#submit').assertSee('Results'))
+        (self.visit('https://pypi.org/')
+            .link('Log in')
+            .assertSee('Log in to PyPI')
+            .text('#username', 'josephmancuso')
+            .text('#password', 'secret')
+            .submit().assertCantSee('Your projects').close())
 
-        # (self.visit('https://pypi.org/')
-        #     .link('Log in')
-        #     .assertSee('Log in to PyPI')
-        #     .text('#username', 'josephmancuso')
-        #     .text('#password', 'secret')
-        #     .submit().assertSee('Your projects'))
-
-        # (self.visit('https://websiteopedia.com/')
-        #     .text('website', 'masoniteproject.com')
-        #     .submit().assertSee('Web Analysis for masoniteproject.com'))
-
-        (self.useBrowser('chrome').visit('/').link('Login')
-            .text('@username', 'idmann509@gmail.com')
-            .text('@password', 'secret')
-            .submit()
-            .assertCanSee('Invalid username or password', element=".alert"))
+        # (self.useBrowser('chrome').visit('http://python').link('Login')
+        #     .text('@username', 'idmann509@gmail.com')
+        #     .text('@password', 'secret')
+        #     .submit()
+        #     .assertCanSee('Invalid username or password', element=".alert"))
 
         # self.assertEqual(self.visit('http://python.org')
         #                  .text('#id-search-field', 'Masonite')
         #                  .value('#id-search-field'), 'Masonite')
 
+    def test_websiteopedia(self):
+        (self.visit('https://websiteopedia.com/')
+            .text('website', 'masoniteproject.com')
+            .submit().assertSee('Web Analysis for masoniteproject.com'))

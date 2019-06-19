@@ -16,22 +16,19 @@ class SeleniumTestCase:
     current_browser = None
     unique_attribute = 'name'
 
-    def useBrowser(self, browser, version='74'):
+    def useBrowser(self, browser, version='74', **options):
         self.__class__._browser = (browser, version)
+        self.__class__._options = options
         return self
 
     def make_browser_if_not_exists(self):
-        if self.current_browser:
-            return self.current_browser
-        
-        self.current_browser = self.makeSelenium(
-            self.__class__._browser[0], self.__class__._browser[1])
-        return self.current_browser
-        
+        return self.makeSelenium(
+            self.__class__._browser[0], self.__class__._browser[1], **self.__class__._options)
+
     def browser(self, browser, version):
         self.current_browser = self.makeSelenium(browser, version)
         return self
-    
+
     def visit(self, url):
         self.current_browser = self.make_browser_if_not_exists()
         if not url.startswith('http'):
@@ -39,17 +36,24 @@ class SeleniumTestCase:
 
         self.current_browser.get(url)
         return self
-    
+
     def assertTitleIs(self, text):
-        assert self.current_browser.title == text, "Title {} is not {}".format(text, self.current_browser.title)
+        assert self.current_browser.title == text, "Title {} is not {}".format(
+            text, self.current_browser.title)
+        return self
+
+    def assertUrlIs(self, url):
+        assert self.current_browser.current_url == url, "Url is not {}".format(url)
         return self
 
     def assertTitleIsNot(self, text):
-        assert self.current_browser.title != text, "Title is {}".format(self.current_browser.title)
+        assert self.current_browser.title != text, "Title is {}".format(
+            self.current_browser.title)
         return self
-    
+
     def assertSee(self, text, element='html'):
-        assert text in self.find(element).text, "{} is not in the {} element".format(text, element)
+        assert text in self.find(
+            element).text, "{} is not in the {} element".format(text, element)
         return self
 
     def assertCanSee(self, text, **kwargs):
@@ -74,7 +78,7 @@ class SeleniumTestCase:
         self.last_element = self.find(element)
         self.last_element.send_keys(text)
         return self
-    
+
     def selectBox(self, element, value):
         element = Select(self.find(element))
         element.select_by_value(value)
@@ -82,6 +86,30 @@ class SeleniumTestCase:
 
     def check(self, element):
         return self.click(element)
+
+    def resize(self, width, height):
+        self.current_browser.set_window_size(width, height)
+        return self
+
+    def maximize(self):
+        self.current_browser.maximize_window()
+        return self
+
+    def minimize(self):
+        self.current_browser.minimize_window()
+        return self
+
+    def refresh(self):
+        self.current_browser.refresh()
+        return self
+
+    def back(self):
+        self.current_browser.back()
+        return self
+
+    def forward(self):
+        self.current_browser.forward()
+        return self
 
     def link(self, text):
         element = self.current_browser.find_element_by_link_text(text)
@@ -95,16 +123,16 @@ class SeleniumTestCase:
                 return self.find(element).get_attribute("value")
             else:
                 return self.text(element, text)
-        
+
         return self
-    
+
     def submit(self, element=None):
         if not element:
             self.last_element.submit()
             return self
         else:
             return self.click(element)
-    
+
     def wait(self, seconds):
         time.sleep(seconds)
         return self
@@ -112,23 +140,26 @@ class SeleniumTestCase:
     def close(self):
         self.current_browser.quit()
         return self
-    
+
     def click(self, element):
         element = self.find(element)
         element.click()
         return self
-    
+
     def clickLink(self, element):
         return self.link(element)
-    
+
     def assertCantSee(self, text):
-        assert self.current_browser.find_element_by_tag_name('body').text in text, "{} is not in the body element".format(text)
+        assert not self.current_browser.find_element_by_tag_name(
+            'body').text in text, "{} is not in the body element".format(text)
         return self
 
-    def makeSelenium(self, platform='chrome', version='74'):
+    def makeSelenium(self, platform='chrome', version='74', **options):
         if platform not in self.drivers:
-            raise ValueError("{} is not a supported platform driver".format(platform))
+            raise ValueError(
+                "{} is not a supported platform driver".format(platform))
         try:
-            return self.drivers.get(platform)().make(version)
+            return self.drivers.get(platform)().make(version, **options)
         except SessionNotCreatedException as e:
-            raise SessionNotCreatedException("Do you have firefox installed? {}".format(str(e)))
+            raise SessionNotCreatedException(
+                "Do you have firefox installed? {}".format(str(e)))
